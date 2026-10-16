@@ -107,6 +107,19 @@ radeon_dp_aux_transfer_native(struct drm_dp_aux *aux, struct drm_dp_aux_msg *msg
 	tmp |= AUX_HPD_SEL(chan->rec.hpd);
 	tmp |= AUX_EN | AUX_LS_READ_EN;
 
+	/*
+	 * ChamSys Ltd:
+	 * On MQ500 consoles, some LCD panels intermittently boot up blank. The
+	 * following flag makes this happen much less often (but doesn't completely
+	 * fix it), but must only be used for the internal DP displays, not the
+	 * external monitor output, because it breaks hotplug detect.
+	 *
+	 * instance 0 and 3 = internal displays
+	 * instance 1 = external monitor
+	 */
+	if (instance == 0 || instance == 3)
+		tmp |= AUX_HPD_DISCON(0x1);
+
 	WREG32(AUX_CONTROL + aux_offset[instance], tmp);
 
 	/* atombios appears to write this twice lets copy it */
