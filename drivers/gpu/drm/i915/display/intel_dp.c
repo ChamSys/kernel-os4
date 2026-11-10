@@ -5290,6 +5290,7 @@ intel_dp_handle_hdmi_link_status_change(struct intel_dp *intel_dp)
 static bool
 intel_dp_needs_link_retrain(struct intel_dp *intel_dp)
 {
+	struct intel_display *display = to_intel_display(intel_dp);
 	u8 link_status[DP_LINK_STATUS_SIZE];
 
 	if (!intel_dp->link.active)
@@ -5330,6 +5331,10 @@ intel_dp_needs_link_retrain(struct intel_dp *intel_dp)
 
 	if (intel_dp->link.seq_train_failures)
 		return true;
+
+	/* ChamSys: MQ80 eDP panels read zero lane status after good training */
+	if (intel_dp_is_edp(intel_dp) && display->platform.valleyview)
+		return false;
 
 	/* Retrain if link not ok */
 	return !intel_dp_link_ok(intel_dp, link_status) &&
